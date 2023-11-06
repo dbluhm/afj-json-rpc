@@ -24,5 +24,14 @@
     "*.{js,ts,json,css,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "@aries-framework/askar": "^0.4.2",
+    "@aries-framework/core": "^0.4.2",
+    "@aries-framework/node": "^0.4.2",
+    "@hyperledger/aries-askar-nodejs": "^0.1.1"
+  },
+  "overrides": {
+    "ref-napi": "npm:@2060.io/ref-napi"
   }
 }
