@@ -6,7 +6,14 @@ import {
   JsonRpcResponse,
   requestValidator,
 } from './types';
-import { JsonRpcInvalidRequestError, JsonRpcParseError } from './errors';
+import {
+  JsonRpcError,
+  JsonRpcInternalError,
+  JsonRpcInvalidParamsError,
+  JsonRpcInvalidRequestError,
+  JsonRpcMethodNotFoundError,
+  JsonRpcParseError,
+} from './errors';
 
 export interface JsonRpcServerConfig {
   useSocket: boolean;
@@ -23,6 +30,12 @@ export class JsonRpcServer {
     this.method_to_handler = new Map();
   }
 
+  public registerHandler<TParams, TResult>(
+    handler: JsonRpcHandler<TParams, TResult>
+  ): void {
+    this.method_to_handler.set(handler.method, handler);
+  }
+
   public start(): void {
     if (this.config.useSocket) {
       this.startSocketServer();
@@ -31,26 +44,10 @@ export class JsonRpcServer {
     }
   }
 
-  private parseRequest(data: string): JsonRpcRequest<any> {
-    let request: JsonRpcRequest<any>;
-    try {
-      request = JSON.parse(data.toString());
-    } catch (e) {
-      throw new JsonRpcParseError(e);
-    }
-
-    if (requestValidator(request)) {
-      return request;
-    } else {
-      throw new JsonRpcInvalidRequestError(requestValidator.errors);
-    }
-  }
-
   private startSocketServer(): void {
     this.server = createServer(socket => {
       socket.on('data', data => {
-        const request: JsonRpcRequest<any> = JSON.parse(data.toString());
-        const response = this.handleRequest(request);
+        const response = this.handle(data.toString());
         if (response) {
           socket.write(JSON.stringify(response));
         }
@@ -69,53 +66,65 @@ export class JsonRpcServer {
     });
 
     rl.on('line', line => {
-      const request: JsonRpcRequest<any> = JSON.parse(line);
-      const response = this.handleRequest(request);
+      const response = this.handle(line);
       if (response) {
         process.stdout.write(JSON.stringify(response) + '\n');
       }
     });
   }
 
-  public registerHandler<TParams, TResult>(
-    handler: JsonRpcHandler<TParams, TResult>
-  ): void {
-    this.method_to_handler.set(handler.method, handler);
+  private parseRequest(data: string): JsonRpcRequest<any> {
+    let request: any;
+    try {
+      request = JSON.parse(data.toString());
+    } catch (e) {
+      throw new JsonRpcParseError(e);
+    }
+
+    if (requestValidator(request)) {
+      return request;
+    } else {
+      throw new JsonRpcInvalidRequestError(
+        request.id ?? null,
+        requestValidator.errors
+      );
+    }
   }
 
   private handleRequest(
     request: JsonRpcRequest<any>
   ): JsonRpcResponse<any> | null {
-    let result: any;
-    let error: any = null;
     const handler = this.method_to_handler.get(request.method);
     if (!handler) {
-      return {
-        jsonrpc: '2.0',
-        id: request.id ?? null,
-        error: {
-          code: -32601,
-          message: 'Method not found',
-        },
-      };
+      throw new JsonRpcMethodNotFoundError(request.id, request.method);
     } else if (!handler.validate(request.params)) {
-      return {
-        jsonrpc: '2.0',
-        id: request.id ?? null,
-        error: {
-          code: -32602,
-          message: `Invalid params: ${handler.validate.errors}`,
-        },
-      };
+      throw new JsonRpcInvalidParamsError(request.id, handler.validate.errors);
     } else {
       try {
         return handler.handler(request);
       } catch (e) {
+        throw new JsonRpcInternalError(request.id, e);
+      }
+    }
+  }
+
+  private handle(data: string): JsonRpcResponse<any> | null {
+    try {
+      const request: JsonRpcRequest<any> = this.parseRequest(data);
+      return this.handleRequest(request);
+    } catch (e) {
+      if (e instanceof JsonRpcError) {
         return {
           jsonrpc: '2.0',
-          id: request.id ?? null,
-          error: { code: -32603, message: `Unexpected error: ${e}` },
+          id: e.id,
+          error: {
+            code: e.code,
+            message: e.message,
+            data: e.data,
+          },
         };
+      } else {
+        throw e;
       }
     }
   }
