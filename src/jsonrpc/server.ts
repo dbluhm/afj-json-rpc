@@ -5,7 +5,7 @@ import {
   JsonRpcRequest,
   JsonRpcResponse,
   requestValidator,
-} from './jsonrpctypes';
+} from './types';
 import { JsonRpcInvalidRequestError, JsonRpcParseError } from './errors';
 
 export interface JsonRpcServerConfig {

@@ -1,4 +1,4 @@
-export class JsonRpcServerError extends Error {
+export class JsonRpcError extends Error {
   public readonly name: string;
   public readonly code: number;
   public readonly message: string;
@@ -15,31 +15,31 @@ export class JsonRpcServerError extends Error {
   }
 }
 
-export class JsonRpcParseError extends JsonRpcServerError {
+export class JsonRpcParseError extends JsonRpcError {
   constructor(data: any) {
     super(-32700, 'Parse error', data);
   }
 }
 
-export class JsonRpcInvalidRequestError extends JsonRpcServerError {
+export class JsonRpcInvalidRequestError extends JsonRpcError {
   constructor(data: any) {
     super(-32600, 'Invalid request', data);
   }
 }
 
-export class JsonRpcMethodNotFoundError extends JsonRpcServerError {
+export class JsonRpcMethodNotFoundError extends JsonRpcError {
   constructor(data: any) {
     super(-32601, 'Method not found', data);
   }
 }
 
-export class JsonRpcInvalidParamsError extends JsonRpcServerError {
+export class JsonRpcInvalidParamsError extends JsonRpcError {
   constructor(data: any) {
     super(-32602, 'Invalid params', data);
   }
 }
 
-export class JsonRpcInternalError extends JsonRpcServerError {
+export class JsonRpcInternalError extends JsonRpcError {
   constructor(data: any) {
     super(-32603, 'Internal error', data);
   }
