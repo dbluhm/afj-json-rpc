@@ -1,42 +1,15 @@
 import Ajv, { JSONSchemaType, ValidateFunction } from 'ajv';
+import * as schema_request from './request.schema.json';
 
-export interface JsonRpcRequest<TParams> {
+export interface JsonRpcRequest<TParams = any> {
   jsonrpc: string;
   method: string;
   params?: TParams;
   id?: string | number | null;
 }
 
-const requestSchema: JSONSchemaType<JsonRpcRequest<any>> = {
-  type: 'object',
-  properties: {
-    jsonrpc: { type: 'string', const: '2.0' },
-    method: {
-      type: 'string',
-      pattern: '^(?!rpc\\.).+', // Method names must not start with 'rpc.'
-    },
-    params: {
-      type: 'null',
-      nullable: true,
-      anyOf: [{ type: 'array' }, { type: 'object' }, { type: 'null' }],
-      additionalProperties: true,
-    },
-    id: {
-      type: 'null',
-      nullable: true,
-      anyOf: [
-        { type: 'string' },
-        { type: 'integer', not: { type: 'number', multipleOf: 1.0 } }, // No fractional parts
-        { type: 'null' },
-      ],
-    },
-  },
-  required: ['jsonrpc', 'method'],
-  additionalProperties: false,
-};
-
 export const requestValidator: ValidateFunction<JsonRpcRequest<any>> =
-  new Ajv().compile(requestSchema);
+  new Ajv().compile<JsonRpcRequest<any>>(schema_request);
 
 export interface JsonRpcSuccessResponse<TResult> {
   jsonrpc: '2.0';

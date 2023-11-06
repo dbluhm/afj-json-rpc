@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+    "jsonrpc": { "type": "string", "const": "2.0" },
+    "method": {
+      "type": "string",
+      "pattern": "^(?!rpc\\.).+"
+    },
+    "params": {
+      "oneOf": [
+        { "type": "array" },
+        { "type": "object", "additionalProperties": true },
+        { "type": "null" }
+      ]
+    },
+    "id": {
+      "oneOf": [{ "type": "string" }, { "type": "integer" }, { "type": "null" }]
+    }
+  },
+  "required": ["jsonrpc", "method"],
+  "additionalProperties": false
+}
