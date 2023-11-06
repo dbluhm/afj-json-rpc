@@ -1,43 +1,108 @@
-import {
-  InitConfig,
-  Agent,
-  KeyDerivationMethod,
-  ConsoleLogger,
-  LogLevel,
-  HttpOutboundTransport,
-} from '@aries-framework/core';
-import { agentDependencies, HttpInboundTransport } from '@aries-framework/node';
-import { AskarModule } from '@aries-framework/askar';
-import { ariesAskar } from '@hyperledger/aries-askar-nodejs';
+import { createServer, Server } from 'net';
+import { createInterface } from 'readline';
 
-const key = ariesAskar.storeGenerateRawKey({});
+interface JsonRpcRequest<TParams> {
+  jsonrpc: string;
+  method: string;
+  params: TParams;
+  id?: string | number | null;
+}
 
-const config: InitConfig = {
-  label: 'docs-agent-nodejs',
-  logger: new ConsoleLogger(LogLevel.debug),
-  walletConfig: {
-    id: 'wallet-id',
-    key: key,
-    keyDerivationMethod: KeyDerivationMethod.Raw,
-    storage: {
-      type: 'sqlite',
-      inMemory: true,
-    },
-  },
-};
+interface JsonRpcSuccessResponse<TResult> {
+  jsonrpc: '2.0';
+  result: TResult;
+  id: string | number;
+}
 
-const agent = new Agent({
-  config,
-  dependencies: agentDependencies,
-  modules: {
-    // Register the Askar module on the agent
-    askar: new AskarModule({
-      ariesAskar,
-    }),
-  },
-});
+interface JsonRpcErrorResponse {
+  jsonrpc: '2.0';
+  error: {
+    code: number;
+    message: string;
+    data?: any;
+  };
+  id: string | number | null;
+}
 
-agent.registerOutboundTransport(new HttpOutboundTransport());
-agent.registerInboundTransport(new HttpInboundTransport({ port: 3001 }));
+type JsonRpcResponse<TResult> =
+  | JsonRpcSuccessResponse<TResult>
+  | JsonRpcErrorResponse;
 
-agent.initialize();
+class JsonRpcServer {
+  private server: Server | null = null;
+  private socketPath: string;
+
+  constructor(socketPath: string) {
+    this.socketPath = socketPath;
+  }
+
+  public start(): void {
+    if (process.argv.includes('--use-socket')) {
+      this.startSocketServer();
+    } else {
+      this.startStdioServer();
+    }
+  }
+
+  private startSocketServer(): void {
+    this.server = createServer(socket => {
+      socket.on('data', data => {
+        const request: JsonRpcRequest<any> = JSON.parse(data.toString());
+        const response = this.handleRequest(request);
+        if (response) {
+          socket.write(JSON.stringify(response));
+        }
+      });
+    });
+
+    this.server.listen(this.socketPath, () => {
+      console.log(`Server listening on socket ${this.socketPath}`);
+    });
+  }
+
+  private startStdioServer(): void {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    rl.on('line', line => {
+      const request: JsonRpcRequest<any> = JSON.parse(line);
+      const response = this.handleRequest(request);
+      if (response) {
+        process.stdout.write(JSON.stringify(response) + '\n');
+      }
+    });
+  }
+
+  private handleRequest(
+    request: JsonRpcRequest<any>
+  ): JsonRpcResponse<any> | null {
+    if (!request.id) {
+      console.log('Notification:', request.method, request.params);
+      return null;
+    }
+
+    let result: any;
+    let error: any = null;
+    switch (request.method) {
+      case 'sayHello':
+        result = `Hello, ${request.params.name}!`;
+        break;
+      default:
+        error = { code: -32601, message: 'Method not found' };
+        break;
+    }
+
+    return {
+      jsonrpc: '2.0',
+      id: request.id,
+      result,
+      error,
+    };
+  }
+}
+
+const SOCKET_PATH = '/tmp/json-rpc-server.sock';
+const server = new JsonRpcServer(SOCKET_PATH);
+server.start();
