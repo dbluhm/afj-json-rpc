@@ -5,22 +5,22 @@ import {
   ConsoleLogger,
   LogLevel,
   HttpOutboundTransport,
-} from "@aries-framework/core";
-import { agentDependencies, HttpInboundTransport } from "@aries-framework/node";
-import { AskarModule } from "@aries-framework/askar";
-import { ariesAskar } from "@hyperledger/aries-askar-nodejs";
+} from '@aries-framework/core';
+import { agentDependencies, HttpInboundTransport } from '@aries-framework/node';
+import { AskarModule } from '@aries-framework/askar';
+import { ariesAskar } from '@hyperledger/aries-askar-nodejs';
 
 const key = ariesAskar.storeGenerateRawKey({});
 
 const config: InitConfig = {
-  label: "docs-agent-nodejs",
+  label: 'docs-agent-nodejs',
   logger: new ConsoleLogger(LogLevel.debug),
   walletConfig: {
-    id: "wallet-id",
+    id: 'wallet-id',
     key: key,
     keyDerivationMethod: KeyDerivationMethod.Raw,
     storage: {
-      type: "sqlite",
+      type: 'sqlite',
       inMemory: true,
     },
   },
