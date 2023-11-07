@@ -36,6 +36,10 @@ export class JsonRpcServer {
     this.method_to_handler.set(handler.method, handler);
   }
 
+  public handlerForMethod(method: string): JsonRpcHandler<any, any> | null {
+    return this.method_to_handler.get(method) ?? null;
+  }
+
   public start(): void {
     if (this.config.useSocket) {
       this.startSocketServer();
@@ -103,12 +107,15 @@ export class JsonRpcServer {
       try {
         return handler.handler(request);
       } catch (e) {
-        throw new JsonRpcInternalError(request.id, e);
+        if (!(e instanceof JsonRpcError)) {
+          throw new JsonRpcInternalError(request.id, e);
+        }
+        throw e;
       }
     }
   }
 
-  private handle(data: string): JsonRpcResponse<any> | null {
+  public handle(data: string): JsonRpcResponse<any> | null {
     try {
       const request: JsonRpcRequest<any> = this.parseRequest(data);
       return this.handleRequest(request);

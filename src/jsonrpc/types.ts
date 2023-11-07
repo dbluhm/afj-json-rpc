@@ -1,5 +1,7 @@
-import Ajv, { JSONSchemaType, ValidateFunction } from 'ajv';
+import { ValidateFunction } from 'ajv';
+import schemas from './schemas';
 import * as schema_request from './request.schema.json';
+import { JsonRpcInvalidRequestError } from './errors';
 
 export interface JsonRpcRequest<TParams = any> {
   jsonrpc: string;
@@ -9,7 +11,7 @@ export interface JsonRpcRequest<TParams = any> {
 }
 
 export const requestValidator: ValidateFunction<JsonRpcRequest<any>> =
-  new Ajv().compile<JsonRpcRequest<any>>(schema_request);
+  schemas.compile<JsonRpcRequest<any>>(schema_request);
 
 export interface JsonRpcSuccessResponse<TResult> {
   jsonrpc: '2.0';
@@ -33,7 +35,35 @@ export type JsonRpcResponse<TResult> =
 
 export interface JsonRpcHandler<TParams, TResult> {
   method: string;
-  schema: JSONSchemaType<TParams>;
   validate: ValidateFunction<TParams>;
-  handler: (request: JsonRpcRequest<TParams>) => JsonRpcResponse<TResult>;
+  handler: (
+    request: JsonRpcRequest<TParams>
+  ) => JsonRpcResponse<TResult> | null;
+}
+
+export abstract class JsonRpcRequestHandler<TParams, TResult>
+  implements JsonRpcHandler<TParams, TResult>
+{
+  abstract method: string;
+  abstract validate: ValidateFunction<TParams>;
+  handler(request: JsonRpcRequest<TParams>): JsonRpcResponse<TResult> {
+    if (!request.id) {
+      throw new JsonRpcInvalidRequestError(request.id, 'id is required');
+    }
+    const result = this.handleRequest(request.params);
+    return {
+      jsonrpc: '2.0',
+      result: result,
+      id: request.id,
+    };
+  }
+  abstract handleRequest(params?: TParams): TResult;
+}
+
+export abstract class JsonRpcNotificationHandler<TParams>
+  implements JsonRpcHandler<TParams, void>
+{
+  abstract method: string;
+  abstract validate: ValidateFunction<TParams>;
+  abstract handler(request: JsonRpcRequest<TParams>): null;
 }

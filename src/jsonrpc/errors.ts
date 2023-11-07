@@ -9,7 +9,7 @@ export class JsonRpcError extends Error {
     id: string | number | null,
     code: number,
     message: string,
-    data: any
+    data?: any
   ) {
     super(message);
     Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
@@ -23,31 +23,31 @@ export class JsonRpcError extends Error {
 }
 
 export class JsonRpcParseError extends JsonRpcError {
-  constructor(data: any) {
+  constructor(data?: any) {
     super(null, -32700, 'Parse error', data);
   }
 }
 
 export class JsonRpcInvalidRequestError extends JsonRpcError {
-  constructor(id: string | number | null = null, data: any) {
+  constructor(id: string | number | null = null, data?: any) {
     super(id, -32600, 'Invalid request', data);
   }
 }
 
 export class JsonRpcMethodNotFoundError extends JsonRpcError {
-  constructor(id: string | number | null = null, data: any) {
+  constructor(id: string | number | null = null, data?: any) {
     super(id, -32601, 'Method not found', data);
   }
 }
 
 export class JsonRpcInvalidParamsError extends JsonRpcError {
-  constructor(id: string | number | null = null, data: any) {
+  constructor(id: string | number | null = null, data?: any) {
     super(id, -32602, 'Invalid params', data);
   }
 }
 
 export class JsonRpcInternalError extends JsonRpcError {
-  constructor(id: string | number | null = null, data: any) {
+  constructor(id: string | number | null = null, data?: any) {
     super(id, -32603, 'Internal error', data);
   }
 }

@@ -1,6 +1,8 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "jsonrpc/request",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "jsonrpc/request.json",
+  "title": "JSON-RPC Request Object",
+  "description": "A JSON-RPC request object.",
   "type": "object",
   "properties": {
     "jsonrpc": { "type": "string", "const": "2.0" },

@@ -34,7 +34,9 @@
     "@aries-framework/core": "^0.4.2",
     "@aries-framework/node": "^0.4.2",
     "@hyperledger/aries-askar-nodejs": "^0.1.1",
-    "ajv": "^8.12.0"
+    "@types/ajv-merge-patch": "^4.1.4",
+    "ajv": "^8.12.0",
+    "ajv-merge-patch": "^5.0.1"
   },
   "overrides": {
     "ref-napi": "npm:@2060.io/ref-napi"

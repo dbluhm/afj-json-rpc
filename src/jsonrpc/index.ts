@@ -5,7 +5,10 @@ import {
   JsonRpcResponse,
   JsonRpcErrorResponse,
   JsonRpcSuccessResponse,
+  JsonRpcRequestHandler,
+  JsonRpcNotificationHandler,
 } from './types';
+import schemas from './schemas';
 
 export {
   JsonRpcServer,
@@ -15,4 +18,7 @@ export {
   JsonRpcResponse,
   JsonRpcErrorResponse,
   JsonRpcSuccessResponse,
+  JsonRpcRequestHandler,
+  JsonRpcNotificationHandler,
+  schemas,
 };
