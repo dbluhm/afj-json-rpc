@@ -13,9 +13,7 @@ import {
   HttpOutboundTransport,
   TrustPingEventTypes,
   BaseEvent,
-  OutOfBandRecord,
   ConnectionEventTypes,
-  ConnectionState,
   ConnectionStateChangedEvent,
   DidExchangeState,
 } from '@aries-framework/core';
