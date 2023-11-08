@@ -95,9 +95,9 @@ export class JsonRpcServer {
     }
   }
 
-  private handleRequest(
+  private async handleRequest(
     request: JsonRpcRequest<any>
-  ): JsonRpcResponse<any> | null {
+  ): Promise<JsonRpcResponse<any> | null> {
     const handler = this.method_to_handler.get(request.method);
     if (!handler) {
       throw new JsonRpcMethodNotFoundError(request.id, request.method);
@@ -105,7 +105,7 @@ export class JsonRpcServer {
       throw new JsonRpcInvalidParamsError(request.id, handler.validate.errors);
     } else {
       try {
-        return handler.handler(request);
+        return await handler.handler(request);
       } catch (e) {
         if (!(e instanceof JsonRpcError)) {
           throw new JsonRpcInternalError(request.id, e);
@@ -115,10 +115,10 @@ export class JsonRpcServer {
     }
   }
 
-  public handle(data: string): JsonRpcResponse<any> | null {
+  public async handle(data: string): Promise<JsonRpcResponse<any> | null> {
     try {
       const request: JsonRpcRequest<any> = this.parseRequest(data);
-      return this.handleRequest(request);
+      return await this.handleRequest(request);
     } catch (e) {
       if (e instanceof JsonRpcError) {
         return {

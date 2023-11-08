@@ -38,7 +38,7 @@ export interface JsonRpcHandler<TParams, TResult> {
   validate: ValidateFunction<TParams>;
   handler: (
     request: JsonRpcRequest<TParams>
-  ) => JsonRpcResponse<TResult> | null;
+  ) => Promise<JsonRpcResponse<TResult>> | JsonRpcResponse<TResult> | null;
 }
 
 export abstract class JsonRpcRequestHandler<TParams, TResult>
@@ -46,18 +46,20 @@ export abstract class JsonRpcRequestHandler<TParams, TResult>
 {
   abstract method: string;
   abstract validate: ValidateFunction<TParams>;
-  handler(request: JsonRpcRequest<TParams>): JsonRpcResponse<TResult> {
+  async handler(
+    request: JsonRpcRequest<TParams>
+  ): Promise<JsonRpcResponse<TResult>> {
     if (!request.id) {
       throw new JsonRpcInvalidRequestError(request.id, 'id is required');
     }
-    const result = this.handleRequest(request.params);
+    const result = await this.handleRequest(request.params);
     return {
       jsonrpc: '2.0',
       result: result,
       id: request.id,
     };
   }
-  abstract handleRequest(params?: TParams): TResult;
+  abstract handleRequest(params?: TParams): Promise<TResult>;
 }
 
 export abstract class JsonRpcNotificationHandler<TParams>
