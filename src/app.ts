@@ -30,10 +30,7 @@ interface InitializeParams {
   port: number;
 }
 interface InitializeResult {}
-class Initialize extends JsonRpcRequestHandler<
-  InitializeParams,
-  InitializeResult
-> {
+class Initialize extends JsonRpcRequestHandler<InitializeParams, InitializeResult> {
   method = 'initialize';
   validate = schemas.compile<InitializeParams>({
     type: 'object',
@@ -101,8 +98,7 @@ class PingMediator extends JsonRpcRequestHandler<undefined, {}> {
     await triggerAndWaitForEvent(agent)
       .on(TrustPingEventTypes.TrustPingResponseReceivedEvent)
       .waitForCondition(
-        (event: BaseEvent) =>
-          event.payload.connectionId === mediatorConnection?.id
+        (event: BaseEvent) => event.payload.connectionId === mediatorConnection?.id
       )
       .triggeredBy(async () => {
         await agent?.connections.sendPing(mediatorConnection.id, {});
@@ -129,9 +125,7 @@ class ReceiveOOBInvitation extends JsonRpcRequestHandler<
       invitation: { type: 'string' },
     },
   });
-  async handleRequest({
-    invitation,
-  }: ReceiveOOBInvitationParams): Promise<OOBRecord> {
+  async handleRequest({ invitation }: ReceiveOOBInvitationParams): Promise<OOBRecord> {
     if (!agent) {
       throw new Error('Agent not initialized');
     }
@@ -140,8 +134,8 @@ class ReceiveOOBInvitation extends JsonRpcRequestHandler<
       .on(ConnectionEventTypes.ConnectionStateChanged)
       .waitForCondition(
         (event: BaseEvent) =>
-          (event as ConnectionStateChangedEvent).payload.connectionRecord
-            .state === DidExchangeState.Completed
+          (event as ConnectionStateChangedEvent).payload.connectionRecord.state ===
+          DidExchangeState.Completed
       )
       .triggeredBy(async () => {
         return await agent?.oob.receiveInvitationFromUrl(invitation);

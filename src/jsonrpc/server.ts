@@ -88,10 +88,7 @@ export class JsonRpcServer {
     if (requestValidator(request)) {
       return request;
     } else {
-      throw new JsonRpcInvalidRequestError(
-        request.id ?? null,
-        requestValidator.errors
-      );
+      throw new JsonRpcInvalidRequestError(request.id ?? null, requestValidator.errors);
     }
   }
 

@@ -145,10 +145,7 @@ describe('JsonRpcServer', () => {
   it('Can use a handler with explicilty empty params', async () => {
     const schema = {};
     const validate = schemas.compile<undefined>(schema);
-    class TestHandler extends JsonRpcRequestHandler<
-      undefined,
-      { test: string }
-    > {
+    class TestHandler extends JsonRpcRequestHandler<undefined, { test: string }> {
       method = 'test';
       validate = validate;
       async handleRequest(): Promise<{ test: string }> {

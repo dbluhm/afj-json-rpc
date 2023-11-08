@@ -5,12 +5,7 @@ export class JsonRpcError extends Error {
   public readonly message: string;
   public readonly data: any;
 
-  constructor(
-    id: string | number | null,
-    code: number,
-    message: string,
-    data?: any
-  ) {
+  constructor(id: string | number | null, code: number, message: string, data?: any) {
     super(message);
     Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
     this.name = this.constructor.name;

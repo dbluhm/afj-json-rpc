@@ -46,9 +46,7 @@ export abstract class JsonRpcRequestHandler<TParams, TResult>
 {
   abstract method: string;
   abstract validate: ValidateFunction<TParams>;
-  async handler(
-    request: JsonRpcRequest<TParams>
-  ): Promise<JsonRpcResponse<TResult>> {
+  async handler(request: JsonRpcRequest<TParams>): Promise<JsonRpcResponse<TResult>> {
     if (!request.id) {
       throw new JsonRpcInvalidRequestError(request.id, 'id is required');
     }

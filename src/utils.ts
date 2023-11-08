@@ -77,9 +77,7 @@ async function _triggerAndWaitforEvent(
 class TriggerAndWaitForEvent {
   private agent: Agent;
   private event: string | undefined = undefined;
-  private condition:
-    | ((data: BaseEvent) => boolean | Promise<boolean>)
-    | undefined;
+  private condition: ((data: BaseEvent) => boolean | Promise<boolean>) | undefined;
   private trigger: (() => any | Promise<any>) | undefined;
 
   constructor(agent: Agent) {
